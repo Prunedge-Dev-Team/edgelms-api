@@ -8,7 +8,7 @@ app_name = 'user'
 
 router = DefaultRouter()
 router.register('users', AuthViewsets)
-router.register('', ProfessionViewsets)
+router.register('professions', ProfessionViewsets)
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -1,25 +1,27 @@
 import asyncio
 from django.conf import settings
+from django.core.cache import cache
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
+from django.contrib.auth import get_user_model, logout, login
+from django.contrib.auth.forms import AuthenticationForm
+from django.utils.crypto import get_random_string
+
 from sentry_sdk import capture_exception
 from rest_framework.decorators import action
 from rest_framework import filters, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-from django.contrib.auth import get_user_model, logout, login
 from rest_framework.settings import api_settings
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status, generics, views
-from django.contrib.auth.forms import AuthenticationForm
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.authtoken.views import ObtainAuthToken
-from django.utils.crypto import get_random_string
 from django_filters.rest_framework import DjangoFilterBackend
-from django.core.cache import cache
-from django.core.cache.backends.base import DEFAULT_TIMEOUT
-from .models import User, Token, Professional
+
+from .models import User, Token, Profession
 from .permissions import IsAdmin, IsRegularUser, IsSuperAdmin
 from .serializers import (CreateUserSerializer, ListUserSerializer, AuthTokenSerializer,
                           CustomObtainTokenPairSerializer, ProfessionSerializer,
@@ -164,9 +166,9 @@ class CreateTokenView(ObtainAuthToken):
 
 
 class ProfessionViewsets(viewsets.ModelViewSet):
-    queryset = Professional.objects.all()
+    queryset = Profession.objects.all()
     serializer_class = ProfessionSerializer
-    http_method_names = ["get"]
+    http_method_names = ["get", "post"]
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = []
@@ -174,46 +176,3 @@ class ProfessionViewsets(viewsets.ModelViewSet):
     ordering_fields = ["name"]
     permission_classes = [IsAuthenticated]
   
-    def paginate_results(self, queryset):
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)  
-    
-    @extend_schema(
-        parameters=[
-            OpenApiParameter(
-                name="page",
-                description="Page number within the paginated result",
-                required=False,
-                type=int,
-            ),
-            OpenApiParameter(
-                name="page_size",
-                description="Num of results to return per page",
-                required=False,
-                type=int,
-            ),
-            OpenApiParameter(
-                name="search", description="A search term.", required=False, type=str
-            ),
-            OpenApiParameter(
-                name="role",
-                description="Filter by either outbound or outbound agents by status",
-                required=False,
-                type=str,
-            )
-        ],
-        methods=["GET"],
-    )   
-    @action(methods=['GET'],
-            detail=False, serializer_class=ProfessionSerializer,
-            url_path='professions')
-    def list_of_professions(self, request, pk=None):
-        qs = self.queryset()
-        qs_filterset = ProfessionFilter(request.GET, queryset=qs)
-        if qs_filterset.is_valid():
-            qs = qs_filterset.qs
-        return self.paginate_results(qs)

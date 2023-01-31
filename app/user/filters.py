@@ -1,5 +1,6 @@
 from django_filters import rest_framework as df_filters
-from .models import Professional
+
+from .models import Profession
 
 
 class ProfessionFilter(df_filters.FilterSet):
@@ -11,5 +12,5 @@ class ProfessionFilter(df_filters.FilterSet):
         return queryset.filter(name__icontains=value)
     
     class Meta:
-        model = Professional
+        model = Profession
         fields = ['name']
