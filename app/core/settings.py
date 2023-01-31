@@ -164,7 +164,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        #'rest_framework.authentication.SessionAuthentication',
     ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
@@ -255,6 +255,7 @@ CELERY_TASK_SERIALIZER = 'json'
 REST_USE_JWT = True
 
 SOCIALACCOUNT_ADAPTER = 'user.adapter.DefaultOverrideAccountAdapter'
+
 
 FLOWER_BASIC_AUTH = os.environ.get('FLOWER_BASIC_AUTH')
 # Assumes that the username is swift or simple have the url as redis://swift:jetSwift@localhost:6379/0
