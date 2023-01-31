@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext as _
-from .models import User, Token
+from .models import User, Token, Professional
 
 
 class UserAdmin(BaseUserAdmin):
@@ -11,7 +11,7 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Personal Info'), {
-            'fields': ('lastname', 'firstname', 'phone', 'roles', 'image')}),
+            'fields': ('lastname', 'firstname', 'phone', 'roles', 'image', 'professional')}),
         (
             _('Permissions'),
             {'fields': ('is_active', 'is_staff', 'is_superuser', 'verified')}
@@ -28,3 +28,4 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(Token)
+admin.site.register(Professional)
