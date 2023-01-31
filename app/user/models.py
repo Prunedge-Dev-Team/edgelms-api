@@ -45,6 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=255, null=True)
     firstname = models.CharField(max_length=255, blank=True, null=True)
     lastname = models.CharField(max_length=255, blank=True, null=True)
+    username = models.CharField(max_length=255, blank=True, null=True)
     image = models.FileField(upload_to='users/', blank=True, null=True)
     phone = models.CharField(max_length=17, blank=True, null=True)
     roles = ArrayField(models.CharField(max_length=20, blank=True,

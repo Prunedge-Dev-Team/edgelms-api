@@ -33,6 +33,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'rest_framework.authtoken',
+    
+    'dj_rest_auth',
+    'allauth',
+    'allauth.account',
+    'dj_rest_auth.registration',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'corsheaders',
     'storages',
     'django_filters',
@@ -42,6 +51,7 @@ INSTALLED_APPS = [
     'core.celery.CeleryConfig',
     'user',
 ]
+SITE_ID = 1
 
 AUTH_USER_MODEL = "user.User"
 
@@ -56,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware'
+    
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -83,6 +94,25 @@ CORS_ALLOW_ALL_ORIGINS = True
 # CSRF_TRUSTED_ORIGINS = ['https://*.prowoks.co']
 LOGIN_URL = 'rest_framework:login'
 LOGOUT_URL = 'rest_framework:logout'
+
+SOCIALACCOUNT_LOGIN_ON_GET=True
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend'
+    ]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
 
 # Database
 
@@ -221,6 +251,10 @@ CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
+
+REST_USE_JWT = True
+
+SOCIALACCOUNT_ADAPTER = 'user.adapter.DefaultOverrideAccountAdapter'
 
 FLOWER_BASIC_AUTH = os.environ.get('FLOWER_BASIC_AUTH')
 # Assumes that the username is swift or simple have the url as redis://swift:jetSwift@localhost:6379/0

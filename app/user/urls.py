@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import (AuthViewsets, CustomObtainTokenPairView, CreateTokenView)
+from .views import (AuthViewsets, CustomObtainTokenPairView, CreateTokenView, GoogleLogin)
 from rest_framework_simplejwt.views import (TokenRefreshView, TokenVerifyView)
 
 
@@ -15,4 +15,5 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='refresh-token'),
     path('token/verify/', TokenVerifyView.as_view(), name='verify-token'),
     path('token/', CreateTokenView.as_view(), name='tokens'),
+    path('social/google/', GoogleLogin.as_view(), name='google'),
 ]
