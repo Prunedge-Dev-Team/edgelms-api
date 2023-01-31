@@ -212,7 +212,7 @@ class ProfessionViewsets(viewsets.ModelViewSet):
             detail=False, serializer_class=ProfessionSerializer,
             url_path='professions')
     def list_of_professions(self, request, pk=None):
-        qs = Professional.objects.all()
+        qs = self.queryset()
         qs_filterset = ProfessionFilter(request.GET, queryset=qs)
         if qs_filterset.is_valid():
             qs = qs_filterset.qs
