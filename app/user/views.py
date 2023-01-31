@@ -5,6 +5,7 @@ from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.contrib.auth import get_user_model, logout, login
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils.crypto import get_random_string
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 from sentry_sdk import capture_exception
 from rest_framework.decorators import action
@@ -27,9 +28,10 @@ from .serializers import (CreateUserSerializer, ListUserSerializer, AuthTokenSer
                           CustomObtainTokenPairSerializer, ProfessionSerializer,
                           VerifyTokenSerializer, InitializePasswordResetSerializer, CreatePasswordSerializer,
                           )
+
 from .tasks import send_registration_email, send_password_reset_email
-from .filters import ProfessionFilter
-CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
+
+
 
 
 class AuthViewsets(viewsets.ModelViewSet):
