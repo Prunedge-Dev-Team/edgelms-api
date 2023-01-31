@@ -1,7 +1,6 @@
+import uuid
 from datetime import datetime
 
-from django.core.files import File
-from urllib.request import urlretrieve
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
@@ -14,6 +13,8 @@ from django.contrib.postgres.fields import ArrayField
 from .managers import CustomUserManager
 from django.core.exceptions import ValidationError
 from django.utils.crypto import get_random_string
+from django.core.files import File
+from urllib.request import urlretrieve
 
 from core.models import AuditableModel
 
@@ -79,6 +80,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Profession(AuditableModel):
+
     name = models.CharField(max_length=255, null=True)
 
     class Meta:
