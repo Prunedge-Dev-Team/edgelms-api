@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import (AuthViewsets, CustomObtainTokenPairView, CreateTokenView, GoogleLogin)
+from .views import (AuthViewsets, ProfessionViewsets, CustomObtainTokenPairView, CreateTokenView, GoogleLogin)
 from rest_framework_simplejwt.views import (TokenRefreshView, TokenVerifyView)
 
 
@@ -8,6 +8,7 @@ app_name = 'user'
 
 router = DefaultRouter()
 router.register('users', AuthViewsets)
+router.register('professions', ProfessionViewsets)
 
 urlpatterns = [
     path('', include(router.urls)),
