@@ -4,7 +4,7 @@ from django.conf import settings
 from django.template.loader import get_template
 from django.core.management import call_command
 from .utils import send_email
-from core.celery import APP
+from core.celery import APP 
 
 
 @APP.task()
@@ -37,3 +37,12 @@ def send_password_reset_email(email_data):
     text_alternative = text_template.render(email_data)
     send_email('Password Reset',
                email_data['email'], html_alternative, text_alternative)
+    
+
+@APP.task()
+def send_otp_email_message_template(email_data):
+    html_template = get_template('emails/otp_email_message_template.html')
+    text_template = get_template('emails/otp_email_message_template.txt')
+    text_alternative = text_template.render(email_data)
+    html_alternative = html_template.render(email_data)
+    send_email("Verify Email",  email_data['email'], html_alternative, text_alternative, notification_type='EMAIL')

@@ -12,6 +12,7 @@ from dateutil.relativedelta import relativedelta
 from email_validator import validate_email, EmailNotValidError
 from .models import Token, User
 from .tasks import send_new_user_email, send_password_reset_email
+from .utils import gen_send_otp
 
 
 class ListUserSerializer(serializers.ModelSerializer):
@@ -124,3 +125,61 @@ class CreatePasswordSerializer(serializers.Serializer):
     """Serializer for password change on reset"""
     token = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
+    
+
+class EmailVerifySerializer(serializers.ModelSerializer):
+    """serializer for email verification"""
+    class Meta:
+        model = User
+        fields = ('email',)
+    
+    def validate(self, attrs):
+        email = attrs.get('email', None)
+        email = attrs['email'].lower().strip()
+        if get_user_model().objects.filter(email=email).exists():
+            if get_user_model().objects.filter(email=email).first().verified:
+                raise serializers.ValidationError("User already exists")
+            Token.objects.filter(user__email=email, token_type="ACCOUNT_VERIFICATION").delete()
+            gen_send_otp(email)
+        else:
+            gen_send_otp(email)
+        return attrs
+        
+class VerifyEmailToken(serializers.ModelSerializer):
+    """serializer for token verification"""
+    class Meta:
+        model = Token
+        fields = ("token",)
+        
+    def validate(self, attrs):
+        token = attrs.get("token")
+        if Token.objects.filter(token=token).exists():
+            if Token.objects.filter(token=token).first().is_valid():
+                Token.objects.filter(token=token).first().verify_user()
+        else:
+            raise serializers.ValidationError("Invalid token")
+        return attrs
+        
+            
+                
+            
+                
+            
+            
+            
+        
+    
+        
+
+        
+        
+        
+        
+       
+        
+        
+    
+    
+
+        
+    

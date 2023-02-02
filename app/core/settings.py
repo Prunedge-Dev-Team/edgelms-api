@@ -283,7 +283,7 @@ SPECTACULAR_SETTINGS = {
         "displayRequestDuration": True
     },
     'UPLOADED_FILES_USE_URL': True,
-    'TITLE': 'Prowoks Application API',
+    'TITLE': 'Mipad-Community Application API',
     'DESCRIPTION': 'HrPay API Doc',
     'VERSION': '1.0.0',
     'LICENCE': {'name': 'BSD License'},
@@ -319,3 +319,4 @@ if DEBUG == 0:
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 # DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+OTP_LIFESPAN = int(os.getenv("OTP_LIFESPAN", 1000))

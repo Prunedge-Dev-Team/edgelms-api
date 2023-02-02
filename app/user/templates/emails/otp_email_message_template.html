@@ -1,0 +1,28 @@
+{% include "emails/layout/header.html" %}
+<!--------------------Email Content Start-------------------------------------------------->
+
+<table
+  width=""
+  border="0"
+  align="left"
+  cellpadding="0"
+  cellspacing="0"
+  style="max-width: 670px; background: #fff"
+>
+  <tr>
+    <td style="padding: 5px 5px">
+      <p style="font-size: 15px; color: #455056">
+        <strong> Hello {{ fullname}},</strong>
+      </p>
+
+      <p style="font-size: 15px; color: #455056">{{message}}</p>
+
+      <br />
+
+      <p>-- Mipad-community Support Team</p>
+    </td>
+  </tr>
+</table>
+
+<!-------------------------------------------Email Content End---------------------->
+{% include "emails/layout/footer.html" %}

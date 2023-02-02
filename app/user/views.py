@@ -1,5 +1,7 @@
 import asyncio
 from django.conf import settings
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from sentry_sdk import capture_exception
 from rest_framework.decorators import action
 from rest_framework import filters, permissions
@@ -20,9 +22,10 @@ from django.core.cache import cache
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from .models import User, Token
 from .permissions import IsAdmin, IsRegularUser, IsSuperAdmin
-from .serializers import (CreateUserSerializer, ListUserSerializer, AuthTokenSerializer, CustomObtainTokenPairSerializer,
-                          VerifyTokenSerializer, InitializePasswordResetSerializer, CreatePasswordSerializer)
+from .serializers import (CreateUserSerializer, ListUserSerializer, AuthTokenSerializer, CustomObtainTokenPairSerializer, 
+                          VerifyTokenSerializer, InitializePasswordResetSerializer, CreatePasswordSerializer, EmailVerifySerializer, VerifyEmailToken)
 from .tasks import send_registration_email, send_password_reset_email
+
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -86,7 +89,6 @@ class AuthViewsets(viewsets.ModelViewSet):
         except Exception as e:
             capture_exception(e)
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     @action(methods=['POST'], detail=False, serializer_class=InitializePasswordResetSerializer, url_path='reset-password')
     def initialize_reset(self, request, pk=None):
         """This endpoint initializes password reset by sending password reset email to user"""
@@ -109,6 +111,7 @@ class AuthViewsets(viewsets.ModelViewSet):
             capture_exception(e)
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    
     @action(methods=['POST'], detail=False, serializer_class=CreatePasswordSerializer, url_path='create-password')
     def create_password(self, request, pk=None):
         """Create a new password given the reset token"""
@@ -126,7 +129,32 @@ class AuthViewsets(viewsets.ModelViewSet):
         except Exception as e:
             capture_exception(e)
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        
+    @action(methods=['POST'], detail=False, serializer_class=EmailVerifySerializer, url_path='verify-email')
+    def verify_email(self, request, pk=None):
+        """This endpoint verify email"""
+        try:
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid():
+                return Response({'success': True, 'message': 'Email sent, check your mail'}, status=status.HTTP_200_OK)
+            return Response({'success': True, 'error':"Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            capture_exception(e)
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    
+    @action(methods=['POST'], detail=False, serializer_class=VerifyEmailToken, url_path='verify-email-token')
+    def verify_email_token(self, request, pk=None):
+        """This endpoint verify token"""
+        try:
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid():
+                return Response({'success': True, 'message': 'Account verified'}, status=status.HTTP_200_OK)
+            return Response({'success': True, 'error':"Verification failed"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            capture_exception(e)
+            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
 
 class CustomObtainTokenPairView(TokenObtainPairView):
     """Login with email and password"""
@@ -152,3 +180,10 @@ class CreateTokenView(ObtainAuthToken):
             }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+
+    
+    
+
