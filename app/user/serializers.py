@@ -1,3 +1,4 @@
+from xml.dom import VALIDATION_ERR
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.translation import gettext_lazy as _
@@ -10,8 +11,9 @@ from django.core.exceptions import PermissionDenied
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from email_validator import validate_email, EmailNotValidError
-from .models import Token, User
+from .models import Connection, Token, User
 from .tasks import send_new_user_email, send_password_reset_email
+
 
 
 class ListUserSerializer(serializers.ModelSerializer):
@@ -124,3 +126,30 @@ class CreatePasswordSerializer(serializers.Serializer):
     """Serializer for password change on reset"""
     token = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
+    
+# class ConnectionSerializer(serializers.ModelSerializer):
+#     """" Serializer for creating connection"""
+#     class Meta:
+#         model = Connection
+#         fields = '__all__'
+
+class ConnectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Connection
+        fields = ['receiver']
+
+    def validate(self, attrs):
+        sender = self.context['request'].user
+        receiver = attrs['receiver']
+        connected=Connection.objects.filter(connected_user__in=[sender,receiver]).first()
+        if connected:
+            raise VALIDATION_ERR ('Exisitng Connection')
+        return super().validate(attrs)
+    
+    def create(self, validated_data):
+        validated_data['sender'] = self.context['request'].user
+
+        connection = super().create(validated_data)
+        connection.connected_user.add(validated_data['sender'])
+        connection.connected_user.add(validated_data['receiver'])
+        return connection

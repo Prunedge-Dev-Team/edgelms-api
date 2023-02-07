@@ -18,11 +18,16 @@ from django.utils.crypto import get_random_string
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.cache import cache
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
-from .models import User, Token
+from .models import Connection, User, Token
 from .permissions import IsAdmin, IsRegularUser, IsSuperAdmin
-from .serializers import (CreateUserSerializer, ListUserSerializer, AuthTokenSerializer, CustomObtainTokenPairSerializer,
+from .serializers import (ConnectionSerializer, CreateUserSerializer, ListUserSerializer, AuthTokenSerializer, CustomObtainTokenPairSerializer,
                           VerifyTokenSerializer, InitializePasswordResetSerializer, CreatePasswordSerializer)
 from .tasks import send_registration_email, send_password_reset_email
+# from django_filters.rest_framework import DjangoFilterBackend
+# from rest_framework import status, viewsets, filters
+# from rest_framework.decorators import action
+# from rest_framework.permissions import IsAuthenticated, AllowAny
+# from rest_framework.response import Response
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -152,3 +157,37 @@ class CreateTokenView(ObtainAuthToken):
             }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    
+    # @action(methods=['POST'], detail=False, serializer_class=ConnectionSerializer,url_path='create-connection')
+    # def create_connection(self,request,status,serializer):
+    #     serializer = ConnectionSerializer(data =request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #     try:
+    #         if serializer.is_valid():
+    #             connection = Connection.objects.filter(ACCEPTED='ACCEPTED').exists()
+    #             if not connection:
+    #                 return Response({'success': False, 'message': 'Connection Pending'},status.HTTP_400_BAD_REQUEST)
+    #             else:
+    #                 return Response({'success': True, 'message': 'Connection ACCEPTED'} ,status.HTTP_200_OK)
+    #     except Exception as e:
+    #         return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+# class ConnectionViewsets(viewsets.ModelViewSet):
+#     def list(self, request):
+#         queryset = Connection.objects.all()
+#         serializer = ConnectionSerializer(queryset, many=True)
+#         return Response(serializer.data)
+
+class ConnectionViewSets(viewsets.ModelViewSet):
+    queryset = Connection.objects.all()
+    serializer_class = ConnectionSerializer
+    http_method_names = ["get", "post", "delete", "put", "patch"]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["status"]
+    ordering_fields = ["created_at",]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
