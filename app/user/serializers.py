@@ -10,8 +10,11 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
+
 from email_validator import validate_email, EmailNotValidError
+
 from .models import Connection, Token, User
+
 from .tasks import send_new_user_email, send_password_reset_email
 
 
@@ -29,12 +32,14 @@ class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ('id', 'email', 'password', 'firstname', 'lastname', 'verified',
-                  'phone', 'image', 'roles', 'last_login', 'created_at')
+                  'phone', 'image', 'date_of_birth', 'recognition_year', 'profession', 'roles', 'last_login', 'created_at')
         extra_kwargs = {'password': {'write_only': True, 'min_length': 8},
                         'last_login': {'read_only': True}}
 
     def validate(self, attrs):
         email = attrs.get('email', None)
+        profession = attrs.get('profession', None)
+   
         if email:
             email = attrs['email'].lower().strip()
             if get_user_model().objects.filter(email=email).exists():
@@ -45,7 +50,11 @@ class CreateUserSerializer(serializers.ModelSerializer):
                 return super().validate(attrs)
             except EmailNotValidError as e:
                 raise serializers.ValidationError(e)
-        return super().validate(attrs)
+            
+        if profession:
+            attrs['profession'] = Profession.objects.filter(id=profession)
+            return super().validate(attrs)
+        raise serializers.ValidationError('Profession does not exist')
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
@@ -126,6 +135,7 @@ class CreatePasswordSerializer(serializers.Serializer):
     """Serializer for password change on reset"""
     token = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
+
     
 # class ConnectionSerializer(serializers.ModelSerializer):
 #     """" Serializer for creating connection"""
@@ -153,3 +163,7 @@ class ConnectionSerializer(serializers.ModelSerializer):
         connection.connected_user.add(validated_data['sender'])
         connection.connected_user.add(validated_data['receiver'])
         return connection
+
+
+
+
