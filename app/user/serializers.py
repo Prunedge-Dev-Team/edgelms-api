@@ -1,4 +1,4 @@
-from xml.dom import VALIDATION_ERR
+# from xml.dom import VALIDATION_ERR
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.translation import gettext_lazy as _
@@ -153,7 +153,7 @@ class ConnectionSerializer(serializers.ModelSerializer):
         receiver = attrs['receiver']
         connected=Connection.objects.filter(connected_user__in=[sender,receiver]).first()
         if connected:
-            raise VALIDATION_ERR ('Exisitng Connection')
+            raise serializers.ValidationError('Existing Connection')
         return super().validate(attrs)
     
     def create(self, validated_data):

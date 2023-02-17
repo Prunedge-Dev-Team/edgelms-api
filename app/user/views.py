@@ -199,7 +199,7 @@ class CreateTokenView(ObtainAuthToken):
 class ConnectionViewSets(viewsets.ModelViewSet):
     queryset = Connection.objects.all()
     serializer_class = ConnectionSerializer
-    http_method_names = ["get", "post", "delete", "put", "patch"]
+    http_method_names = ["get", "post"]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["status"]
     ordering_fields = ["created_at",]
