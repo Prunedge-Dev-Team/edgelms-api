@@ -1,3 +1,4 @@
+# from xml.dom import VALIDATION_ERR
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.translation import gettext_lazy as _
@@ -11,8 +12,11 @@ from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 
 from email_validator import validate_email, EmailNotValidError
-from .models import Token, User, Profession
+
+from .models import Connection, Token, User
+
 from .tasks import send_new_user_email, send_password_reset_email
+
 
 
 class ListUserSerializer(serializers.ModelSerializer):
@@ -58,7 +62,8 @@ class CreateUserSerializer(serializers.ModelSerializer):
             user=user, token_type='ACCOUNT_VERIFICATION',
             defaults={'user': user, 'token_type': 'ACCOUNT_VERIFICATION', 'token': get_random_string(120)})
         user_data = {'id': user.id, 'email': user.email, 'fullname': f"{user.lastname} {user.firstname}",
-                     'url': f"{settings.CLIENT_URL}/verify-user/?token={token.token}"}
+                     'url': f"{settings.CLIENT_URL}/verify-user/?token={token.token}"}  
+        print(token.token)
         send_new_user_email.delay(user_data)
         return user
 
@@ -132,10 +137,34 @@ class CreatePasswordSerializer(serializers.Serializer):
     token = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
-
-class ProfessionSerializer(serializers.ModelSerializer):
-    """Serializer for professions"""
-    class Meta:
-        model = Profession
-        fields = ('id', 'name',)
     
+# class ConnectionSerializer(serializers.ModelSerializer):
+#     """" Serializer for creating connection"""
+#     class Meta:
+#         model = Connection
+#         fields = '__all__'
+
+class ConnectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Connection
+        fields = ['receiver']
+
+    def validate(self, attrs):
+        sender = self.context['request'].user
+        receiver = attrs['receiver']
+        connected=Connection.objects.filter(connected_user__in=[sender,receiver]).first()
+        if connected:
+            raise serializers.ValidationError('Existing Connection')
+        return super().validate(attrs)
+    
+    def create(self, validated_data):
+        validated_data['sender'] = self.context['request'].user
+
+        connection = super().create(validated_data)
+        connection.connected_user.add(validated_data['sender'])
+        connection.connected_user.add(validated_data['receiver'])
+        return connection
+
+
+
+

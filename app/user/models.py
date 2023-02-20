@@ -10,6 +10,8 @@ from django.contrib.auth.models import PermissionsMixin
 from django.conf import settings
 from django.urls import reverse
 from django.contrib.postgres.fields import ArrayField
+
+from core.models import AuditableModel
 from .managers import CustomUserManager
 from django.core.exceptions import ValidationError
 from django.utils.crypto import get_random_string
@@ -122,3 +124,21 @@ class Token(models.Model):
     def reset_user_password(self, password):
         self.user.set_password(password)
         self.user.save()
+
+
+class Connection(AuditableModel):
+    
+    STATUS = (
+        ("PENDING","PENDING"),
+        ("ACCEPTED","ACCEPTED"),
+    )
+    
+    status = models.CharField(max_length=20, choices=STATUS)
+    sender = models.ForeignKey(User,related_name='connection_sender',on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name='connection_reciver', on_delete=models.CASCADE)
+    connected_user = models.ManyToManyField(User)
+    
+    
+    
+    def __str__(self):
+        return {self.status}
