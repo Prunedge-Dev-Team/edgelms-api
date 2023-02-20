@@ -151,25 +151,41 @@ class CustomObtainTokenPairView(TokenObtainPairView):
     serializer_class = CustomObtainTokenPairSerializer
 
 
+# class CreateTokenView(ObtainAuthToken):
+#     """Create a new auth token for user"""
+#     serializer_class = AuthTokenSerializer
+#     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.serializer_class(data=request.data,
+#                                            context={'request': request})
+#         serializer.is_valid(raise_exception=True)
+#         user = serializer.validated_data['user']
+#         try:
+#             token, created = Token.objects.get_or_create(user=user)
+#             return Response({
+#                 'token': token.key,
+#                 'created': created,
+#                 'roles': user.roles
+#             }, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class CreateTokenView(ObtainAuthToken):
     """Create a new auth token for user"""
     serializer_class = AuthTokenSerializer
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
-
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
+        serializer = self.serializer_class(
+            data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        try:
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({
-                'token': token.key,
-                'created': created,
-                'roles': user.roles
-            }, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'message': str(e)}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        token, created = Token.objects.get_or_create(user=user)
+        return Response(
+            {'token': token.key, 'created': created, 'role': user.role},
+            status=status.HTTP_200_OK)
+        
 
     
     
